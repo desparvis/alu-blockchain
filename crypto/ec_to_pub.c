@@ -1,37 +1,28 @@
 #include "hblk_crypto.h"
 
+
+
 /**
- * ec_from_pub - generates EC_KEY from pub key.
- * @pub: the pub key in buffer.
- * Return: Pointer to generated EC_KEY struct or NULL.
- * Author: Frank Onyema Orji.
+ * ec_to_pub - extracts the public key from an EC_KEY struct.
+ *
+ * @key: Pointer to the EC_KEY struct.
+ * @pub: Address at whcih to store the extracted public key.
+ *
+ * Return: Pointer to @pub or NULL upon failure
  */
-EC_KEY *ec_from_pub(uint8_t const pub[EC_PUB_LEN])
+uint8_t *ec_to_pub(EC_KEY const *key, uint8_t pub[EC_PUB_LEN])
 {
-	EC_KEY *key;
-	EC_POINT *point;
+	const EC_POINT *point = NULL;
+	const EC_GROUP *group = NULL;
 
-	if (!pub)
+	if (!key || !pub)
 		return (NULL);
-
-	key = EC_KEY_new_by_curve_name(EC_CURVE);
-	if (!key)
+	group = EC_KEY_get0_group(key);
+	point = EC_KEY_get0_public_key(key);
+	if (!group || !point)
 		return (NULL);
-
-	point = EC_POINT_new(EC_KEY_get0_group(key));
-	if (!point)
-	{
-		EC_KEY_free(key);
+	if (!EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED,
+				pub, EC_PUB_LEN, NULL))
 		return (NULL);
-	}
-
-	if (!EC_POINT_oct2point(EC_KEY_get0_group(key), point, pub, EC_PUB_LEN, NULL)
-			|| !EC_KEY_set_public_key(key, point))
-	{
-		EC_KEY_free(key);
-		EC_POINT_free(point);
-		return (NULL);
-	}
-	EC_POINT_free(point);
-	return (key);
+	return (pub);
 }
