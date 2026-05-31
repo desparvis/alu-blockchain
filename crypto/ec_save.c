@@ -5,7 +5,7 @@
  * @key: pointer to EC_KEY struct with key pair.
  * @folder: the folder to save, created if nedd be.
  * Return: 1 on success else o
- * Author: Frank Onyema Orji.
+ * Author: Credo Desparvis Gutabarwa
  */
 int ec_save(EC_KEY *key, char const *folder)
 {
